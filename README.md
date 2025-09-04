@@ -2,6 +2,8 @@
     <img src="https://readme-typing-svg.herokuapp.com/?font=Righteous&size=35&center=true&vCenter=true&width=500&height=70&duration=4000&lines=Hi+There!+👋;+I'm+Omprakash+Panda!;" />
 </h1>
 
+<p align="left"> <img src="https://komarev.com/ghpvc/?username=Omprakash-p06&label=Profile%20views&color=0e75b6&style=flat" alt="Omprakash-p06" /> </p>
+
 <h3 align="center">A passionate learner from India 🇮🇳</h3>
 
 <br/>
