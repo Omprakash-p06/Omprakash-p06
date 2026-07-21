@@ -230,7 +230,7 @@ text, tspan {{white-space: pre;}}
         ('Contact', 'key', None, None),
         (pad('Email.Personal'), 'key', 'omprakash11273@gmail.com', 'value'),
         (pad('LinkedIn'), 'key', 'omprakash-panda', 'value'),
-        (pad('Discord'), 'key', '919276897203023942', 'value'),
+        (pad('Discord'), 'key', 'juro_1', 'value'),
         div('GitHub Stats'),
         (f'Repos:   {stats["repos"]:>4}     │  Stars:       {stats["stars"]}', 'value', None, None),
         (f'Commits: {stats["commits"]:>6}   │  Followers:   {stats["followers"]}', 'value', None, None),
