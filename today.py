@@ -129,28 +129,37 @@ def fetch_all_stats():
 
     return stats
 
+import io
+
 # ── ASCII Art ──────────────────────────────────────────────────────────────────
-def image_to_ascii(path, cols=36, rows=22):
-    """Generates ASCII art. Width restricted to 36 cols to PREVENT OVERLAPPING text."""
-    img = Image.open(path).convert('RGB')
-    w, h = img.size
-    if h > w * 1.2:
-        top = int(h * 0.04)
-        img = img.crop((0, top, w, top + int(w * 1.05)))
-    img = ImageEnhance.Contrast(img).enhance(1.4)
-    img = img.filter(ImageFilter.EDGE_ENHANCE)
+def get_charmander_ascii(cols=36, rows=22):
+    """Fetches a Charmander sprite and generates ASCII art."""
+    url = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png'
+    r = requests.get(url, timeout=10)
+    img = Image.open(io.BytesIO(r.content)).convert('RGBA')
+
+    # Crop to just the sprite bounds to maximize size
+    bbox = img.getbbox()
+    if bbox:
+        img = img.crop(bbox)
+
     img = img.resize((cols, rows), Image.Resampling.LANCZOS)
-    gray = img.convert('L')
-    pix = list(gray.tobytes())
-    rlen = len(ASCII_RAMP)
+    RAMP = ' .:-=+*#%@'
     
     lines = []
-    for row in range(rows):
-        chars = []
-        for col in range(cols):
-            p = pix[row * cols + col]
-            chars.append(ASCII_RAMP[int((p / 255) * (rlen - 1))])
-        lines.append(''.join(chars))
+    for y in range(img.height):
+        line = ''
+        for x in range(img.width):
+            r_c, g_c, b_c, a_c = img.getpixel((x, y))
+            # Handle transparent background
+            if a_c < 100:
+                line += ' '
+            else:
+                lum = 0.299*r_c + 0.587*g_c + 0.114*b_c
+                # Darker colors get denser characters
+                idx = int((1 - lum/255) * (len(RAMP) - 1))
+                line += RAMP[idx]
+        lines.append(line)
     return lines
 
 # ── SVG Builder ────────────────────────────────────────────────────────────────
@@ -242,17 +251,9 @@ text, tspan {{white-space: pre;}}
 # ── Main ───────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     t0 = time.perf_counter()
-    image_path = os.path.join('picture', 'profile picture.jpeg')
-    if not os.path.exists(image_path):
-        c = glob.glob('picture/*')
-        image_path = c[0] if c else None
-    
-    if not image_path:
-        print('❌ No image found in picture/')
-        sys.exit(1)
 
-    print('📷 Generating ASCII art...')
-    ascii_lines = image_to_ascii(image_path, cols=36, rows=22)
+    print('📷 Generating Charmander ASCII art...')
+    ascii_lines = get_charmander_ascii(cols=36, rows=22)
 
     print('📡 Fetching concurrent GitHub stats (blazing fast)...')
     stats = fetch_all_stats()
@@ -265,3 +266,4 @@ if __name__ == '__main__':
     
     print(f'✅ Done in {time.perf_counter() - t0:.2f}s!')
     print(f'   Stats: Repos {stats["repos"]}, Stars {stats["stars"]}, Commits {stats["commits"]}, LOC +{stats["loc_add"]} -{stats["loc_del"]}')
+
