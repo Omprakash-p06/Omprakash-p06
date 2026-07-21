@@ -220,7 +220,7 @@ text, tspan {{white-space: pre;}}
 """
     parts = []
     parts.append(f"<?xml version='1.0' encoding='UTF-8'?>")
-    parts.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 570" width="980" height="570" font-family="ConsolasFallback,Consolas,monospace" font-size="16px">')
+    parts.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 570" font-family="ConsolasFallback,Consolas,monospace" font-size="16px">')
     parts.append(f'<style>{css}</style>')
     parts.append(f'<rect width="980" height="570" fill="{bg}" rx="15"/>')
 
