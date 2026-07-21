@@ -126,6 +126,19 @@ def fetch_all_stats():
         stats['loc_add'] = 48250
         stats['loc_del'] = 14100
         stats['commits'] = 924
+        
+    # 3. Fetch profile views
+    stats['views'] = 0
+    try:
+        r = requests.get(f'https://komarev.com/ghpvc/?username={USER_NAME}', timeout=10)
+        import re
+        matches = re.findall(r'>([^<]+)<\/text>', r.text)
+        for match in matches:
+            if match.isdigit():
+                stats['views'] = int(match)
+                break
+    except Exception:
+        pass
 
     return stats
 
@@ -134,7 +147,7 @@ import io
 # ── Pixel Art SVG ──────────────────────────────────────────────────────────────────
 # ── Pixel Art SVG ──────────────────────────────────────────────────────────────────
 def get_pokemon_pixel_arts(scale=8):
-    """Reads all sprites in picture/pokemon/ and generates animated SVG <g> elements."""
+    """Reads sprites in picture/pokemon/ and selects one based on the current day."""
     pokemon_dir = os.path.join('picture', 'pokemon')
     if not os.path.exists(pokemon_dir):
         return [], ""
@@ -145,49 +158,39 @@ def get_pokemon_pixel_arts(scale=8):
     if num_pokemon == 0:
         return [], ""
 
-    groups = []
-    css_parts = []
+    # Pick a pokemon based on the day of the year so it changes daily
+    day_of_year = datetime.datetime.today().timetuple().tm_yday
+    selected_file = files[day_of_year % num_pokemon]
     
-    # Slideshow animation
-    duration = num_pokemon * 4
-    css_parts.append(f"@keyframes pkmn-fade {{")
-    css_parts.append(f"  0%, {round((3.5/duration)*100, 2)}% {{ opacity: 1; }}")
-    css_parts.append(f"  {round((4.0/duration)*100, 2)}%, {round(((duration-0.5)/duration)*100, 2)}% {{ opacity: 0; }}")
-    css_parts.append(f"  100% {{ opacity: 1; }}")
-    css_parts.append(f"}}")
+    path = os.path.join(pokemon_dir, selected_file)
+    img = Image.open(path).convert('RGBA')
 
-    for idx, f in enumerate(files):
-        path = os.path.join(pokemon_dir, f)
-        img = Image.open(path).convert('RGBA')
+    # Crop to just the sprite bounds to maximize size
+    bbox = img.getbbox()
+    if bbox:
+        img = img.crop(bbox)
 
-        # Crop to just the sprite bounds to maximize size
-        bbox = img.getbbox()
-        if bbox:
-            img = img.crop(bbox)
-        
-        # Calculate centering offsets
-        sprite_w = img.width * scale
-        sprite_h = img.height * scale
-        offset_x = (420 - sprite_w) // 2
-        offset_y = (530 - sprite_h) // 2
+    # Calculate centering offsets
+    sprite_w = img.width * scale
+    sprite_h = img.height * scale
+    offset_x = (420 - sprite_w) // 2
+    offset_y = (530 - sprite_h) // 2
 
-        rects = []
-        for y in range(img.height):
-            for x in range(img.width):
-                r_c, g_c, b_c, a_c = img.getpixel((x, y))
-                if a_c > 0:
-                    hex_color = f"#{r_c:02x}{g_c:02x}{b_c:02x}"
-                    rx = offset_x + (x * scale)
-                    ry = offset_y + (y * scale)
-                    rects.append(f'<rect x="{rx}" y="{ry}" width="{scale}" height="{scale}" fill="{hex_color}"/>')
-        
-        delay = idx * 4
-        css_parts.append(f".pkmn-group-{idx} {{ opacity: 0; animation: pkmn-fade {duration}s infinite; animation-delay: {delay}s; }}")
-        
-        g_tag = f'<g class="pkmn-group-{idx}">\n' + '\n'.join(rects) + '\n</g>'
-        groups.append(g_tag)
+    rects = []
+    for y in range(img.height):
+        delay = round((y + 1) * 0.03, 3)
+        for x in range(img.width):
+            r_c, g_c, b_c, a_c = img.getpixel((x, y))
+            if a_c > 0:
+                hex_color = f"#{r_c:02x}{g_c:02x}{b_c:02x}"
+                rx = offset_x + (x * scale)
+                ry = offset_y + (y * scale)
+                rects.append(
+                    f'<rect x="{rx}" y="{ry}" width="{scale}" height="{scale}" fill="{hex_color}" '
+                    f'style="animation-delay:{delay}s"/>'
+                )
 
-    return groups, '\n'.join(css_parts)
+    return rects, ""
 
 # ── SVG Builder ────────────────────────────────────────────────────────────────
 def build_svg(pokemon_groups, pokemon_css, stats, is_dark):
@@ -212,7 +215,8 @@ size-adjust: 109%;
 .delColor {{fill: {del_c};}}
 .cc {{fill: {cc_c};}}
 text, tspan {{white-space: pre;}}
-{pokemon_css}
+@keyframes drawIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
+.pixel-art > rect {{ opacity: 0; animation: drawIn 0.08s linear forwards; }}
 """
     parts = []
     parts.append(f"<?xml version='1.0' encoding='UTF-8'?>")
@@ -257,6 +261,7 @@ text, tspan {{white-space: pre;}}
         div('GitHub Stats'),
         (f'Repos:   {stats["repos"]:>4}     │  Stars:       {stats["stars"]}', 'value', None, None),
         (f'Commits: {stats["commits"]:>6}   │  Followers:   {stats["followers"]}', 'value', None, None),
+        (f'Views:   {stats["views"]:>6}   │', 'value', None, None),
         ('Lines of Code:  ', 'key', f'+{stats["loc_add"]:,}', 'addColor'),
         ('                ', 'key', f'-{stats["loc_del"]:,}  deleted', 'delColor')
     ]
@@ -276,7 +281,7 @@ text, tspan {{white-space: pre;}}
 if __name__ == '__main__':
     t0 = time.perf_counter()
 
-    print('📷 Generating animated Pokemon pixel art slideshow...')
+    print('📷 Generating daily Pokemon pixel art...')
     pokemon_groups, pokemon_css = get_pokemon_pixel_arts()
 
     print('📡 Fetching concurrent GitHub stats (blazing fast)...')
