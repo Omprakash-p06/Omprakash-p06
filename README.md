@@ -2,6 +2,17 @@
     <img src="https://readme-typing-svg.herokuapp.com/?font=Righteous&size=35&center=true&vCenter=true&width=500&height=70&duration=4000&lines=Hi+There!+👋;+I'm+Omprakash+Panda!;" />
 </h1>
 
+<div align="center">
+  <a href="https://github.com/Omprakash-p06/Omprakash-p06">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Omprakash-p06/Omprakash-p06/main/dark_mode.svg">
+      <img src="https://raw.githubusercontent.com/Omprakash-p06/Omprakash-p06/main/light_mode.svg" alt="Omprakash Panda - Developer Resume Card" width="100%">
+    </picture>
+  </a>
+</div>
+
+<br/>
+
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=Omprakash-p06&label=Profile%20views&color=0e75b6&style=flat" alt="Omprakash-p06" /> </p>
 
 <h3 align="center">A passionate learner from India 🇮🇳</h3>

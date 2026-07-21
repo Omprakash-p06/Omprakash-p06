@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" font-family="ConsolasFallback,Consolas,monospace" width="985px" height="530px" font-size="16px">
+<style>
+@font-face {
+src: local('Consolas'), local('Consolas Bold');
+font-family: 'ConsolasFallback';
+font-display: swap;
+-webkit-size-adjust: 109%;
+size-adjust: 109%;
+}
+.key {fill: #953800;}
+.value {fill: #0a3069;}
+.addColor {fill: #1a7f37;}
+.delColor {fill: #cf222e;}
+.cc {fill: #6e7781;}
+text, tspan {white-space: pre;}
+@keyframes drawIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.ascii > tspan {
+  opacity: 0;
+  animation: drawIn 0.07s linear forwards;
+}
+</style>
+<rect width="985px" height="530px" fill="#ffffff" rx="15"/>
+<text x="15" y="30" fill="#24292f" class="ascii">
+<tspan x="15" y="30" style="animation-delay:0.06s">@@@@@@@@@@@@@@@BNNNggWNgWWgNW8N###NNggNgNggggg</tspan>
+<tspan x="15" y="50" style="animation-delay:0.12s">@@@@@@@@@@@BNBNW#BBB#g#BB#NNRHWWgMgNgggggggggg</tspan>
+<tspan x="15" y="70" style="animation-delay:0.18s">@QQ@QQQQQB@Ndg#BB##BB#8gN#B##Ngg8HWNgggggggggg</tspan>
+<tspan x="15" y="90" style="animation-delay:0.24s">B#########NMBB##N#BBNNBN#gN#NNggN8RRWNgggNN##B</tspan>
+<tspan x="15" y="110" style="animation-delay:0.3s">#####N###W8QBNNNNggWWQB@@BdRgg#N#gD#######BB@@</tspan>
+<tspan x="15" y="130" style="animation-delay:0.36s">#N###N##BHg@#B#N8HHDW@NZ|MR8NWNWMNDBBBBBQBBBQ@</tspan>
+<tspan x="15" y="150" style="animation-delay:0.42s">##BBQQBB@MNB#NMRWWN#Ng#diKOORN@NNMDBQQQBQ@@Q@@</tspan>
+<tspan x="15" y="170" style="animation-delay:0.48s">@@@@@@@@@WdBBMg#BNM8KpZp{(]RWqDBNdM@Q@@QQQQQQQ</tspan>
+<tspan x="15" y="190" style="animation-delay:0.54s">QBBQQQQ@@@MDWBBQgWd0MD1!ii1KD}ZWddMBQQBBBBBB#B</tspan>
+<tspan x="15" y="210" style="animation-delay:0.6s">NNN#BBB#8${1&lt;{KHMd|(MH/i!((!&lt;{]{&lt;&lt;&lt;/HB######BB</tspan>
+<tspan x="15" y="230" style="animation-delay:0.66s">BBBBQ@@o&gt;&lt;&lt;i&lt;&gt;&gt;!/[{|{{(|{}(i||(&gt;&lt;1(i{BQQBBBBQQ</tspan>
+<tspan x="15" y="250" style="animation-delay:0.72s">DHDHDRD]&lt;1|&gt;(//&lt;i|1ii&lt;&lt;/|(({}/|111&lt;&lt;10OOKqqq0O</tspan>
+<tspan x="15" y="270" style="animation-delay:0.78s">{{{{{{{}}{/(&gt;&gt;11&gt;i&gt;i&lt;&lt;&lt;|i&lt;||{}(1&lt;(||/{//{{{{/o</tspan>
+<tspan x="15" y="290" style="animation-delay:0.84s">]]]]]]][]]]][}}}}///[][]][[][1&gt;&gt;&gt;i&lt;}oo]oooooo$</tspan>
+<tspan x="15" y="310" style="animation-delay:0.9s">ooooppoooooooooooopoooooopoo}1(1&lt;({]]]]o]]]]]$</tspan>
+<tspan x="15" y="330" style="animation-delay:0.96s">[[[[[[[[}[}[[[[[[}[[}[[[[]]](1(|}}{[[}}[}}}[}Z</tspan>
+<tspan x="15" y="350" style="animation-delay:1.02s">[[[}}}}}}[}}}}}[[}}}}}[}[|l(/||/i`"}[}}}}}}[}Z</tspan>
+<tspan x="15" y="370" style="animation-delay:1.08s">[[[[[[[[[][[[[[[[[[[[}[[[{:^&lt;/|&gt;^ ;}[}}}[}[[}Z</tspan>
+<tspan x="15" y="390" style="animation-delay:1.14s">[[[[}[[}[[[[}[[}}}}[[}}[[}!I:I;^";;'([}[[}}[}p</tspan>
+<tspan x="15" y="410" style="animation-delay:1.2s">[[[[[[[[[[[[[[[}[[[[[}[[[[:'&gt;^&lt;Il^`'1]}}}}}[}p</tspan>
+<tspan x="15" y="430" style="animation-delay:1.26s">[[[}[[[[}[[}}}}}}[}}}}}}}[{,^.^,'',i}[}}}}}}}Z</tspan>
+<tspan x="15" y="450" style="animation-delay:1.32s">[[]}[[}[[[[[[[[[[[[[[[[}[[[}(&gt;!&gt;|({[}[}[}}[[}Z</tspan>
+<tspan x="15" y="470" style="animation-delay:1.38s">[[[[}[}}}}}}}[[}[}}[}[[}}}}[[[][[[[}}}}[}}}[}Z</tspan>
+<tspan x="15" y="490" style="animation-delay:1.44s">[[[[[[[[[}[[}[[[[[[}}[[}[[[}}}}}}}[[}}}}}}[[}Z</tspan>
+<tspan x="15" y="510" style="animation-delay:1.5s">[[[}[[[[[}[[}}[[[}[[[}}}[[[[}}}}}}[}}}}}}}[[}Z</tspan>
+</text>
+<text x="420" y="30" fill="#24292f">
+<tspan x="420" y="30" class="key">omprakash@panda</tspan>
+<tspan x="420" y="50" class="cc">────────────────────────────────────────────────</tspan>
+<tspan x="420" y="70"><tspan class="key">OS ................... </tspan><tspan class="value">Linux, Android</tspan></tspan>
+<tspan x="420" y="90"><tspan class="key">Uptime ............... </tspan><tspan class="value">20 years, 7 months, 24 days</tspan></tspan>
+<tspan x="420" y="110"><tspan class="key">Host ................. </tspan><tspan class="value">M S Ramaiah Institute of Technology</tspan></tspan>
+<tspan x="420" y="130"><tspan class="key">Location ............. </tspan><tspan class="value">Bangalore, Karnataka, India</tspan></tspan>
+<tspan x="420" y="150"><tspan class="key">IDE .................. </tspan><tspan class="value">VS Code, IntelliJ IDEA</tspan></tspan>
+<tspan x="420" y="170" class="cc">────────────────────────────────────────────────</tspan>
+<tspan x="420" y="190"><tspan class="key">Languages.Programming . </tspan><tspan class="value">Python, C, Java, JavaScript</tspan></tspan>
+<tspan x="420" y="210"><tspan class="key">Languages.Web ........ </tspan><tspan class="value">HTML, CSS</tspan></tspan>
+<tspan x="420" y="230"><tspan class="key">Languages.Database ... </tspan><tspan class="value">MySQL, SQL</tspan></tspan>
+<tspan x="420" y="250"><tspan class="key">Languages.Tools ...... </tspan><tspan class="value">Git, Linux CLI, Bash</tspan></tspan>
+<tspan x="420" y="270" class="cc">────────────────────────────────────────────────</tspan>
+<tspan x="420" y="290"><tspan class="key">Hobbies.Software ..... </tspan><tspan class="value">Open Source, Android Dev</tspan></tspan>
+<tspan x="420" y="310"><tspan class="key">Hobbies.Learning ..... </tspan><tspan class="value">DSA, System Design</tspan></tspan>
+<tspan x="420" y="330" class="cc">────────────────────────────────────────────────</tspan>
+<tspan x="420" y="350" class="key">Contact</tspan>
+<tspan x="420" y="370"><tspan class="key">Email.Personal ....... </tspan><tspan class="value">omprakash11273@gmail.com</tspan></tspan>
+<tspan x="420" y="390"><tspan class="key">LinkedIn ............. </tspan><tspan class="value">omprakash-panda</tspan></tspan>
+<tspan x="420" y="410"><tspan class="key">Discord .............. </tspan><tspan class="value">919276897203023942</tspan></tspan>
+<tspan x="420" y="430" class="cc">────────────────────────────────────────────────</tspan>
+<tspan x="420" y="450" class="cc">─ GitHub Stats ─────────────────────────────────</tspan>
+<tspan x="420" y="470" class="value">Repos:   17     │  Stars:       12</tspan>
+<tspan x="420" y="490" class="value">Commits:    924   │  Followers:   15</tspan>
+<tspan x="420" y="510"><tspan class="key">Lines of Code:  </tspan><tspan class="addColor">+48,250</tspan></tspan>
+<tspan x="420" y="530"><tspan class="key">                </tspan><tspan class="delColor">-14,100  deleted</tspan></tspan>
+</text>
+</svg>
