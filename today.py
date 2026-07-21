@@ -132,41 +132,65 @@ def fetch_all_stats():
 import io
 
 # ── Pixel Art SVG ──────────────────────────────────────────────────────────────────
-def get_charmander_pixel_art(scale=8):
-    """Reads local Charmander sprite and generates SVG <rect> elements for each pixel."""
-    path = os.path.join('picture', 'charmander.png')
-    img = Image.open(path).convert('RGBA')
-
-    # Crop to just the sprite bounds to maximize size
-    bbox = img.getbbox()
-    if bbox:
-        img = img.crop(bbox)
+# ── Pixel Art SVG ──────────────────────────────────────────────────────────────────
+def get_pokemon_pixel_arts(scale=8):
+    """Reads all sprites in picture/pokemon/ and generates animated SVG <g> elements."""
+    pokemon_dir = os.path.join('picture', 'pokemon')
+    if not os.path.exists(pokemon_dir):
+        return [], ""
     
-    # Calculate centering offsets
-    sprite_w = img.width * scale
-    sprite_h = img.height * scale
-    offset_x = (420 - sprite_w) // 2
-    offset_y = (530 - sprite_h) // 2
+    files = [f for f in os.listdir(pokemon_dir) if f.endswith('.png')]
+    files.sort()
+    num_pokemon = len(files)
+    if num_pokemon == 0:
+        return [], ""
 
-    rects = []
-    # Pop-in animation delay per row to mimic the drawIn effect
-    for y in range(img.height):
-        delay = round((y + 1) * 0.03, 3)
-        for x in range(img.width):
-            r_c, g_c, b_c, a_c = img.getpixel((x, y))
-            # Handle transparent background
-            if a_c > 0:
-                hex_color = f"#{r_c:02x}{g_c:02x}{b_c:02x}"
-                rx = offset_x + (x * scale)
-                ry = offset_y + (y * scale)
-                rects.append(
-                    f'<rect x="{rx}" y="{ry}" width="{scale}" height="{scale}" fill="{hex_color}" '
-                    f'style="animation-delay:{delay}s"/>'
-                )
-    return rects
+    groups = []
+    css_parts = []
+    
+    # Slideshow animation
+    duration = num_pokemon * 4
+    css_parts.append(f"@keyframes pkmn-fade {{")
+    css_parts.append(f"  0%, {round((3.5/duration)*100, 2)}% {{ opacity: 1; }}")
+    css_parts.append(f"  {round((4.0/duration)*100, 2)}%, {round(((duration-0.5)/duration)*100, 2)}% {{ opacity: 0; }}")
+    css_parts.append(f"  100% {{ opacity: 1; }}")
+    css_parts.append(f"}}")
+
+    for idx, f in enumerate(files):
+        path = os.path.join(pokemon_dir, f)
+        img = Image.open(path).convert('RGBA')
+
+        # Crop to just the sprite bounds to maximize size
+        bbox = img.getbbox()
+        if bbox:
+            img = img.crop(bbox)
+        
+        # Calculate centering offsets
+        sprite_w = img.width * scale
+        sprite_h = img.height * scale
+        offset_x = (420 - sprite_w) // 2
+        offset_y = (530 - sprite_h) // 2
+
+        rects = []
+        for y in range(img.height):
+            for x in range(img.width):
+                r_c, g_c, b_c, a_c = img.getpixel((x, y))
+                if a_c > 0:
+                    hex_color = f"#{r_c:02x}{g_c:02x}{b_c:02x}"
+                    rx = offset_x + (x * scale)
+                    ry = offset_y + (y * scale)
+                    rects.append(f'<rect x="{rx}" y="{ry}" width="{scale}" height="{scale}" fill="{hex_color}"/>')
+        
+        delay = idx * 4
+        css_parts.append(f".pkmn-group-{idx} {{ opacity: 0; animation: pkmn-fade {duration}s infinite; animation-delay: {delay}s; }}")
+        
+        g_tag = f'<g class="pkmn-group-{idx}">\n' + '\n'.join(rects) + '\n</g>'
+        groups.append(g_tag)
+
+    return groups, '\n'.join(css_parts)
 
 # ── SVG Builder ────────────────────────────────────────────────────────────────
-def build_svg(pixel_rects, stats, is_dark):
+def build_svg(pokemon_groups, pokemon_css, stats, is_dark):
     if is_dark:
         bg,   text_fill = '#161b22', '#c9d1d9'
         key_c, val_c, add_c, del_c, cc_c = '#ffa657','#a5d6ff','#3fb950','#f85149','#616e7f'
@@ -188,8 +212,7 @@ size-adjust: 109%;
 .delColor {{fill: {del_c};}}
 .cc {{fill: {cc_c};}}
 text, tspan {{white-space: pre;}}
-@keyframes drawIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
-.pixel-art > rect {{ opacity: 0; animation: drawIn 0.08s linear forwards; }}
+{pokemon_css}
 """
     parts = []
     parts.append(f"<?xml version='1.0' encoding='UTF-8'?>")
@@ -199,7 +222,7 @@ text, tspan {{white-space: pre;}}
 
     # Pixel Art
     parts.append(f'<g class="pixel-art">')
-    parts.extend(pixel_rects)
+    parts.extend(pokemon_groups)
     parts.append('</g>')
 
     # Info Layout Data
@@ -253,17 +276,17 @@ text, tspan {{white-space: pre;}}
 if __name__ == '__main__':
     t0 = time.perf_counter()
 
-    print('📷 Generating Charmander pixel art...')
-    pixel_rects = get_charmander_pixel_art()
+    print('📷 Generating animated Pokemon pixel art slideshow...')
+    pokemon_groups, pokemon_css = get_pokemon_pixel_arts()
 
     print('📡 Fetching concurrent GitHub stats (blazing fast)...')
     stats = fetch_all_stats()
     
     print('🎨 Rendering SVGs...')
     with open('dark_mode.svg', 'w', encoding='utf-8') as f:
-        f.write(build_svg(pixel_rects, stats, is_dark=True))
+        f.write(build_svg(pokemon_groups, pokemon_css, stats, is_dark=True))
     with open('light_mode.svg', 'w', encoding='utf-8') as f:
-        f.write(build_svg(pixel_rects, stats, is_dark=False))
+        f.write(build_svg(pokemon_groups, pokemon_css, stats, is_dark=False))
     
     print(f'✅ Done in {time.perf_counter() - t0:.2f}s!')
     print(f'   Stats: Repos {stats["repos"]}, Stars {stats["stars"]}, Commits {stats["commits"]}, LOC +{stats["loc_add"]} -{stats["loc_del"]}')
