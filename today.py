@@ -132,16 +132,21 @@ def fetch_all_stats():
 import io
 
 # ── Pixel Art SVG ──────────────────────────────────────────────────────────────────
-def get_charmander_pixel_art(offset_x=15, offset_y=45, scale=8):
-    """Fetches a Charmander sprite and generates SVG <rect> elements for each pixel."""
-    url = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png'
-    r = requests.get(url, timeout=10)
-    img = Image.open(io.BytesIO(r.content)).convert('RGBA')
+def get_charmander_pixel_art(scale=8):
+    """Reads local Charmander sprite and generates SVG <rect> elements for each pixel."""
+    path = os.path.join('picture', 'charmander.png')
+    img = Image.open(path).convert('RGBA')
 
     # Crop to just the sprite bounds to maximize size
     bbox = img.getbbox()
     if bbox:
         img = img.crop(bbox)
+    
+    # Calculate centering offsets
+    sprite_w = img.width * scale
+    sprite_h = img.height * scale
+    offset_x = (420 - sprite_w) // 2
+    offset_y = (530 - sprite_h) // 2
 
     rects = []
     # Pop-in animation delay per row to mimic the drawIn effect
