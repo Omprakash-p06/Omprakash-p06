@@ -178,7 +178,7 @@ def get_pokemon_pixel_arts(scale=8):
 
     rects = []
     for y in range(img.height):
-        delay = round((y + 1) * 0.03, 3)
+        delay = round((y + 1) * 0.04, 3)
         for x in range(img.width):
             r_c, g_c, b_c, a_c = img.getpixel((x, y))
             if a_c > 0:
@@ -216,7 +216,7 @@ size-adjust: 109%;
 .cc {{fill: {cc_c};}}
 text, tspan {{white-space: pre;}}
 @keyframes drawIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
-.pixel-art > rect {{ opacity: 0; animation: drawIn 0.08s linear forwards; }}
+.pixel-art > rect {{ opacity: 0; animation: drawIn 0.15s ease-out forwards; }}
 """
     parts = []
     parts.append(f"<?xml version='1.0' encoding='UTF-8'?>")
