@@ -174,7 +174,7 @@ def get_pokemon_pixel_arts(scale=8):
     sprite_w = img.width * scale
     sprite_h = img.height * scale
     offset_x = (420 - sprite_w) // 2
-    offset_y = (530 - sprite_h) // 2
+    offset_y = (570 - sprite_h) // 2
 
     rects = []
     for y in range(img.height):
@@ -220,9 +220,9 @@ text, tspan {{white-space: pre;}}
 """
     parts = []
     parts.append(f"<?xml version='1.0' encoding='UTF-8'?>")
-    parts.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="985px" height="530px" font-family="ConsolasFallback,Consolas,monospace" font-size="16px">')
+    parts.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="1050px" height="570px" font-family="ConsolasFallback,Consolas,monospace" font-size="16px">')
     parts.append(f'<style>{css}</style>')
-    parts.append(f'<rect width="985px" height="530px" fill="{bg}" rx="15"/>')
+    parts.append(f'<rect width="1050px" height="570px" fill="{bg}" rx="15"/>')
 
     # Pixel Art
     parts.append(f'<g class="pixel-art">')
