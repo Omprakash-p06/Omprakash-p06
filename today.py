@@ -131,9 +131,9 @@ def fetch_all_stats():
 
 import io
 
-# ── ASCII Art ──────────────────────────────────────────────────────────────────
-def get_charmander_ascii(cols=36, rows=22):
-    """Fetches a Charmander sprite and generates ASCII art."""
+# ── Pixel Art SVG ──────────────────────────────────────────────────────────────────
+def get_charmander_pixel_art(offset_x=15, offset_y=45, scale=8):
+    """Fetches a Charmander sprite and generates SVG <rect> elements for each pixel."""
     url = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png'
     r = requests.get(url, timeout=10)
     img = Image.open(io.BytesIO(r.content)).convert('RGBA')
@@ -143,27 +143,25 @@ def get_charmander_ascii(cols=36, rows=22):
     if bbox:
         img = img.crop(bbox)
 
-    img = img.resize((cols, rows), Image.Resampling.LANCZOS)
-    RAMP = ' .:-=+*#%@'
-    
-    lines = []
+    rects = []
+    # Pop-in animation delay per row to mimic the drawIn effect
     for y in range(img.height):
-        line = ''
+        delay = round((y + 1) * 0.03, 3)
         for x in range(img.width):
             r_c, g_c, b_c, a_c = img.getpixel((x, y))
             # Handle transparent background
-            if a_c < 100:
-                line += ' '
-            else:
-                lum = 0.299*r_c + 0.587*g_c + 0.114*b_c
-                # Darker colors get denser characters
-                idx = int((1 - lum/255) * (len(RAMP) - 1))
-                line += RAMP[idx]
-        lines.append(line)
-    return lines
+            if a_c > 0:
+                hex_color = f"#{r_c:02x}{g_c:02x}{b_c:02x}"
+                rx = offset_x + (x * scale)
+                ry = offset_y + (y * scale)
+                rects.append(
+                    f'<rect x="{rx}" y="{ry}" width="{scale}" height="{scale}" fill="{hex_color}" '
+                    f'style="animation-delay:{delay}s"/>'
+                )
+    return rects
 
 # ── SVG Builder ────────────────────────────────────────────────────────────────
-def build_svg(ascii_lines, stats, is_dark):
+def build_svg(pixel_rects, stats, is_dark):
     if is_dark:
         bg,   text_fill = '#161b22', '#c9d1d9'
         key_c, val_c, add_c, del_c, cc_c = '#ffa657','#a5d6ff','#3fb950','#f85149','#616e7f'
@@ -186,7 +184,7 @@ size-adjust: 109%;
 .cc {{fill: {cc_c};}}
 text, tspan {{white-space: pre;}}
 @keyframes drawIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
-.ascii > tspan {{ opacity: 0; animation: drawIn 0.08s linear forwards; }}
+.pixel-art > rect {{ opacity: 0; animation: drawIn 0.08s linear forwards; }}
 """
     parts = []
     parts.append(f"<?xml version='1.0' encoding='UTF-8'?>")
@@ -194,12 +192,10 @@ text, tspan {{white-space: pre;}}
     parts.append(f'<style>{css}</style>')
     parts.append(f'<rect width="985px" height="530px" fill="{bg}" rx="15"/>')
 
-    # ASCII
-    parts.append(f'<text x="15" y="30" fill="{text_fill}" class="ascii">')
-    for i, line in enumerate(ascii_lines):
-        # Center vertically slightly since we reduced to 22 rows
-        parts.append(f'<tspan x="15" y="{45 + i*20}" style="animation-delay:{round((i+1)*0.07, 3)}s">{esc(line)}</tspan>')
-    parts.append('</text>')
+    # Pixel Art
+    parts.append(f'<g class="pixel-art">')
+    parts.extend(pixel_rects)
+    parts.append('</g>')
 
     # Info Layout Data
     age_str = calculate_age(BIRTHDAY)
@@ -252,17 +248,17 @@ text, tspan {{white-space: pre;}}
 if __name__ == '__main__':
     t0 = time.perf_counter()
 
-    print('📷 Generating Charmander ASCII art...')
-    ascii_lines = get_charmander_ascii(cols=36, rows=22)
+    print('📷 Generating Charmander pixel art...')
+    pixel_rects = get_charmander_pixel_art()
 
     print('📡 Fetching concurrent GitHub stats (blazing fast)...')
     stats = fetch_all_stats()
     
     print('🎨 Rendering SVGs...')
     with open('dark_mode.svg', 'w', encoding='utf-8') as f:
-        f.write(build_svg(ascii_lines, stats, is_dark=True))
+        f.write(build_svg(pixel_rects, stats, is_dark=True))
     with open('light_mode.svg', 'w', encoding='utf-8') as f:
-        f.write(build_svg(ascii_lines, stats, is_dark=False))
+        f.write(build_svg(pixel_rects, stats, is_dark=False))
     
     print(f'✅ Done in {time.perf_counter() - t0:.2f}s!')
     print(f'   Stats: Repos {stats["repos"]}, Stars {stats["stars"]}, Commits {stats["commits"]}, LOC +{stats["loc_add"]} -{stats["loc_del"]}')
