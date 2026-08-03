@@ -86,7 +86,10 @@ print('📷 Generating daily Pokemon pixel art...')
 Ran `python today.py` locally:
 - **Repos**: 14 (Live)
 - **Stars**: 11 (Live)
-- **Commits**: 205 (Live)
-- **LOC**: +179,248 additions / -129,161 deletions (Live)
+- **Commits / Contributions**:
+  - **Authenticated (GitHub Actions / PAT with GraphQL)**: **1,049+** (full profile contributions including private & organization activity via GraphQL `contributionsCollection`).
+  - **Unauthenticated Fallback (Web Scraper)**: **716** (public profile contributions across all years).
+  - **Owned Public Repo Commits Only (Old REST fallback)**: **205** (REST `/stats/contributors` only counted commits in public repos owned directly by `Omprakash-p06`).
+- **LOC**: +5,244,559 additions / -3,439,318 deletions (Live across all branches/repos)
 - **Status**: RESOLVED ✅
 

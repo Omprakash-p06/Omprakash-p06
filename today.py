@@ -72,7 +72,7 @@ def get_repo_loc(repo_name):
     return add, dele, commits
 
 def get_year_commits(year):
-    """Fetches total commits for a specific year using GraphQL."""
+    """Fetches total contributions (commits, PRs, issues, code reviews) for a specific year using GraphQL."""
     s = f'{year}-01-01T00:00:00Z'
     e = f'{year}-12-31T23:59:59Z'
     if year == datetime.datetime.today().year:
@@ -94,6 +94,23 @@ def get_year_commits(year):
     except Exception:
         pass
     return 0
+
+def fetch_scraped_contributions():
+    """Fetches total contributions from GitHub user profile pages as unauthenticated fallback."""
+    total = 0
+    try:
+        years = list(range(START_DATE.year, datetime.datetime.today().year + 1))
+        for y in years:
+            url = f'https://github.com/users/{USER_NAME}/contributions?from={y}-01-01&to={y}-12-31'
+            r = requests.get(url, headers={'accept': 'text/html'}, timeout=10)
+            if r.status_code == 200:
+                import re
+                m = re.search(r'([\d,]+)\s+contribution', r.text)
+                if m:
+                    total += int(m.group(1).replace(',', ''))
+    except Exception:
+        pass
+    return total
 
 def fetch_all_stats():
     """Concurrently fetches user info, commits, and LOC."""
@@ -142,7 +159,11 @@ def fetch_all_stats():
             stats['loc_del'] += d
             rest_commits += c
 
-    stats['commits'] = graphql_commits if (graphql_commits > 0) else rest_commits
+    if graphql_commits > 0:
+        stats['commits'] = graphql_commits
+    else:
+        scraped_commits = fetch_scraped_contributions()
+        stats['commits'] = scraped_commits if scraped_commits > 0 else rest_commits
     
     # Fallback only if both GraphQL and REST failed to find data
     if stats['loc_add'] == 0 and stats['loc_del'] == 0 and stats['commits'] == 0:
