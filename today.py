@@ -18,11 +18,15 @@ import xml.sax.saxutils as saxutils
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 USER_NAME    = os.environ.get('USER_NAME', 'Omprakash-p06')
-ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN', '')
+ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN') or os.environ.get('GITHUB_TOKEN') or os.environ.get('GH_TOKEN') or ''
 BIRTHDAY     = datetime.datetime(2005, 11, 27)
 START_DATE   = datetime.datetime(2022, 6, 1)
 
-HEADERS = {'authorization': f'token {ACCESS_TOKEN}'} if ACCESS_TOKEN else {}
+# Ensure stdout supports UTF-8 on Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+
+HEADERS = {'authorization': f'token {ACCESS_TOKEN}', 'accept': 'application/vnd.github.v3+json'} if ACCESS_TOKEN else {'accept': 'application/vnd.github.v3+json'}
 
 # Andrew6rant's density ramp
 ASCII_RAMP = r"""@QB#NgWM8RDHdOKq0$Zpo][}{/|(1<>i!lI;:,"^`'. """
@@ -45,20 +49,27 @@ def esc(text):
 
 # ── Optimized GitHub API Fetching (Concurrent) ─────────────────────────────────
 def get_repo_loc(repo_name):
-    """Fetches LOC additions and deletions for a single repo using REST API."""
-    add, dele = 0, 0
+    """Fetches LOC additions, deletions, and commits for a single repo using REST API with retry on 202."""
+    add, dele, commits = 0, 0, 0
     try:
         url = f'https://api.github.com/repos/{USER_NAME}/{repo_name}/stats/contributors'
-        r = requests.get(url, headers=HEADERS, timeout=10)
-        if r.status_code == 200 and isinstance(r.json(), list):
-            for c in r.json():
-                if isinstance(c, dict) and c.get('author', {}).get('login', '').lower() == USER_NAME.lower():
-                    for w in c.get('weeks', []):
-                        add += w.get('a', 0)
-                        dele += w.get('d', 0)
+        for _ in range(4):
+            r = requests.get(url, headers=HEADERS, timeout=10)
+            if r.status_code == 200 and isinstance(r.json(), list):
+                for c in r.json():
+                    if isinstance(c, dict) and c.get('author', {}).get('login', '').lower() == USER_NAME.lower():
+                        commits += c.get('total', 0)
+                        for w in c.get('weeks', []):
+                            add += w.get('a', 0)
+                            dele += w.get('d', 0)
+                break
+            elif r.status_code == 202:
+                time.sleep(1.5)
+            else:
+                break
     except Exception:
         pass
-    return add, dele
+    return add, dele, commits
 
 def get_year_commits(year):
     """Fetches total commits for a specific year using GraphQL."""
@@ -78,7 +89,7 @@ def get_year_commits(year):
         r = requests.post('https://api.github.com/graphql', 
                           json={'query': query, 'variables': {'s': s, 'e': e, 'login': USER_NAME}}, 
                           headers=HEADERS, timeout=10)
-        if r.status_code == 200:
+        if r.status_code == 200 and 'data' in r.json() and r.json()['data'].get('user'):
             return r.json()['data']['user']['contributionsCollection']['contributionCalendar']['totalContributions']
     except Exception:
         pass
@@ -88,16 +99,24 @@ def fetch_all_stats():
     """Concurrently fetches user info, commits, and LOC."""
     stats = {'repos': 0, 'stars': 0, 'commits': 0, 'followers': 0, 'loc_add': 0, 'loc_del': 0}
     
-    # 1. Fetch repos and user info
+    # 1. Fetch repos and user info (handle pagination if needed)
     try:
-        r = requests.get(f'https://api.github.com/users/{USER_NAME}/repos?per_page=100&type=owner', headers=HEADERS, timeout=10)
-        if r.status_code == 200:
-            repos_data = r.json()
-            stats['repos'] = len(repos_data)
-            stats['stars'] = sum(x.get('stargazers_count', 0) for x in repos_data if isinstance(x, dict))
-            repo_names = [x['name'] for x in repos_data if isinstance(x, dict)]
-        else:
-            repo_names = []
+        repo_names = []
+        page = 1
+        while True:
+            r = requests.get(f'https://api.github.com/users/{USER_NAME}/repos?per_page=100&page={page}&type=owner', headers=HEADERS, timeout=10)
+            if r.status_code == 200 and isinstance(r.json(), list):
+                data = r.json()
+                if not data:
+                    break
+                stats['repos'] += len(data)
+                stats['stars'] += sum(x.get('stargazers_count', 0) for x in data if isinstance(x, dict))
+                repo_names.extend([x['name'] for x in data if isinstance(x, dict)])
+                if len(data) < 100:
+                    break
+                page += 1
+            else:
+                break
             
         u = requests.get(f'https://api.github.com/users/{USER_NAME}', headers=HEADERS, timeout=10)
         if u.status_code == 200:
@@ -105,28 +124,33 @@ def fetch_all_stats():
     except Exception:
         repo_names = []
 
-    # 2. Concurrently fetch LOC per repo and Commits per year (only if token provided)
-    if ACCESS_TOKEN:
-        years = list(range(START_DATE.year, datetime.datetime.today().year + 1))
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            # Schedule LOC tasks
-            loc_futures = [executor.submit(get_repo_loc, name) for name in repo_names]
-            # Schedule commit tasks
+    # 2. Concurrently fetch LOC per repo and Commits per year
+    rest_commits = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        loc_futures = [executor.submit(get_repo_loc, name) for name in repo_names]
+        
+        graphql_commits = 0
+        if ACCESS_TOKEN:
+            years = list(range(START_DATE.year, datetime.datetime.today().year + 1))
             commit_futures = [executor.submit(get_year_commits, y) for y in years]
-            
-            for future in concurrent.futures.as_completed(loc_futures):
-                a, d = future.result()
-                stats['loc_add'] += a
-                stats['loc_del'] += d
-                
             for future in concurrent.futures.as_completed(commit_futures):
-                stats['commits'] += future.result()
-    else:
-        print("⚠ No ACCESS_TOKEN, skipping LOC and detailed commits.")
+                graphql_commits += future.result()
+        
+        for future in concurrent.futures.as_completed(loc_futures):
+            a, d, c = future.result()
+            stats['loc_add'] += a
+            stats['loc_del'] += d
+            rest_commits += c
+
+    stats['commits'] = graphql_commits if (graphql_commits > 0) else rest_commits
+    
+    # Fallback only if both GraphQL and REST failed to find data
+    if stats['loc_add'] == 0 and stats['loc_del'] == 0 and stats['commits'] == 0:
+        print("⚠ Could not fetch stats dynamically, using initial baseline fallback.")
         stats['loc_add'] = 48250
         stats['loc_del'] = 14100
         stats['commits'] = 924
-        
+
     # 3. Fetch profile views
     stats['views'] = 0
     try:

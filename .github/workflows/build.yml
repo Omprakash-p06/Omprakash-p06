@@ -43,6 +43,7 @@ jobs:
         env:
           USER_NAME: "Omprakash-p06"
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python today.py
 
