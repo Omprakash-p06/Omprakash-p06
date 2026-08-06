@@ -28,6 +28,17 @@ if sys.platform == 'win32':
 
 HEADERS = {'authorization': f'token {ACCESS_TOKEN}', 'accept': 'application/vnd.github.v3+json'} if ACCESS_TOKEN else {'accept': 'application/vnd.github.v3+json'}
 
+def gh_get(url, timeout=10):
+    """Performs GET request using token HEADERS. If 401/403 occurs (bad/dummy token), falls back unauthenticated."""
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=timeout)
+        if r.status_code in (401, 403) and ACCESS_TOKEN:
+            # Fallback to unauthenticated
+            return requests.get(url, headers={'accept': 'application/vnd.github.v3+json'}, timeout=timeout)
+        return r
+    except Exception:
+        return None
+
 # Andrew6rant's density ramp
 ASCII_RAMP = r"""@QB#NgWM8RDHdOKq0$Zpo][}{/|(1<>i!lI;:,"^`'. """
 
@@ -54,8 +65,8 @@ def get_repo_loc(repo_name):
     try:
         url = f'https://api.github.com/repos/{USER_NAME}/{repo_name}/stats/contributors'
         for _ in range(4):
-            r = requests.get(url, headers=HEADERS, timeout=10)
-            if r.status_code == 200 and isinstance(r.json(), list):
+            r = gh_get(url, timeout=10)
+            if r and r.status_code == 200 and isinstance(r.json(), list):
                 for c in r.json():
                     if isinstance(c, dict) and c.get('author', {}).get('login', '').lower() == USER_NAME.lower():
                         commits += c.get('total', 0)
@@ -63,7 +74,7 @@ def get_repo_loc(repo_name):
                             add += w.get('a', 0)
                             dele += w.get('d', 0)
                 break
-            elif r.status_code == 202:
+            elif r and r.status_code == 202:
                 time.sleep(1.5)
             else:
                 break
@@ -76,7 +87,7 @@ def get_year_commits(year):
     s = f'{year}-01-01T00:00:00Z'
     e = f'{year}-12-31T23:59:59Z'
     if year == datetime.datetime.today().year:
-        e = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        e = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
     
     query = '''query($s: DateTime!, $e: DateTime!, $login: String!) {
         user(login: $login) {
@@ -117,12 +128,12 @@ def fetch_all_stats():
     stats = {'repos': 0, 'stars': 0, 'commits': 0, 'followers': 0, 'loc_add': 0, 'loc_del': 0}
     
     # 1. Fetch repos and user info (handle pagination if needed)
+    repo_names = []
     try:
-        repo_names = []
         page = 1
         while True:
-            r = requests.get(f'https://api.github.com/users/{USER_NAME}/repos?per_page=100&page={page}&type=owner', headers=HEADERS, timeout=10)
-            if r.status_code == 200 and isinstance(r.json(), list):
+            r = gh_get(f'https://api.github.com/users/{USER_NAME}/repos?per_page=100&page={page}&type=owner', timeout=10)
+            if r and r.status_code == 200 and isinstance(r.json(), list):
                 data = r.json()
                 if not data:
                     break
@@ -135,11 +146,11 @@ def fetch_all_stats():
             else:
                 break
             
-        u = requests.get(f'https://api.github.com/users/{USER_NAME}', headers=HEADERS, timeout=10)
-        if u.status_code == 200:
+        u = gh_get(f'https://api.github.com/users/{USER_NAME}', timeout=10)
+        if u and u.status_code == 200:
             stats['followers'] = u.json().get('followers', 0)
     except Exception:
-        repo_names = []
+        pass
 
     # 2. Concurrently fetch LOC per repo and Commits per year
     rest_commits = 0

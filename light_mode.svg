@@ -865,6 +865,6 @@ text, tspan {white-space: pre;}
 <tspan x="420" y="450" class="value">Repos:     15     │  Stars:       12</tspan>
 <tspan x="420" y="470" class="value">Commits:    823   │  Followers:   10</tspan>
 <tspan x="420" y="490" class="value">Views:      467   │</tspan>
-<tspan x="420" y="510"><tspan class="key">Lines of Code:  </tspan><tspan class="addColor">+5,266,803</tspan></tspan>
-<tspan x="420" y="530"><tspan class="key">                </tspan><tspan class="delColor">-3,445,482  deleted</tspan></tspan>
+<tspan x="420" y="510"><tspan class="key">Lines of Code:  </tspan><tspan class="addColor">+5,238,504</tspan></tspan>
+<tspan x="420" y="530"><tspan class="key">                </tspan><tspan class="delColor">-3,419,558  deleted</tspan></tspan>
 </text></svg>
